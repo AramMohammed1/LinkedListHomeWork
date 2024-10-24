@@ -29,17 +29,16 @@ public class SyncListTest extends TestCase {
         }
     }
 
-    int randLen = 50_000;
-    public void testHelp(SortList list, String label) {
+    public void testHelp(SortList list, String label,int randLen, int threadCount) {
         RandomSeq seq = new RandomSeq(0, 80_000);
         isSorted="Sorted";
         List<AddThread> addThreads = new ArrayList<>();
         List<ContainThread> containThreads = new ArrayList<>();
         List<RemoveThread> removeThreads = new ArrayList<>();
-        for (int i = 0; i < 7; i++) {
-            AddThread addThread = new AddThread(seq, randLen / 7, list);
-            ContainThread containThread = new ContainThread(seq, randLen / 7, list);
-            RemoveThread removeThread = new RemoveThread(seq, randLen / 7, list);
+        for (int i = 0; i < threadCount; i++) {
+            AddThread addThread = new AddThread(seq, randLen /threadCount, list);
+            ContainThread containThread = new ContainThread(seq, randLen / threadCount, list);
+            RemoveThread removeThread = new RemoveThread(seq, randLen / threadCount, list);
             Thread threadA = new Thread(addThread);
             addThreads.add(addThread);
             Thread threadC = new Thread(containThread);
@@ -125,14 +124,27 @@ public class SyncListTest extends TestCase {
     }
 
 
-    public void testRun(){
-        SyncList syncList = new SyncList();
-        testHelp(syncList,"Synchronization");
-        System.out.println("==============");
-        RWLockList rwLockList = new RWLockList();
-        testHelp(rwLockList, "RWLock");
-        System.out.println("==============");
-        LockList list = new LockList();
-        testHelp(list,"Lock");
-    }
-}
+    public void testRun() {
+        int[] listLengths = {10000, 20000, 50000,100000};
+        int[] threadCounts = {2, 4, 6, 8, 16, 32};
+
+        for (int length : listLengths) {
+            for (int threadCount : threadCounts) {
+                System.out.println("Testing with list length: " + length + " and thread count: " + threadCount);
+
+                SyncList syncList = new SyncList();
+                System.out.println("Testing SyncList:");
+                testHelp(syncList, "Synchronization", length, threadCount);
+
+                RWLockList rwLockList = new RWLockList();
+                System.out.println("Testing RWLockList:");
+                testHelp(rwLockList, "RWLock", length, threadCount);
+
+                LockList lockList = new LockList();
+                System.out.println("Testing LockList:");
+                testHelp(lockList, "Lock", length, threadCount);
+
+                System.out.println("==============");
+            }
+        }
+    }}
